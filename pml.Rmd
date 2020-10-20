@@ -1,0 +1,169 @@
+---
+title: "github"
+author: "Jishnu Channamsetti"
+date: "20/10/2020"
+output: html_document
+---
+
+# Establishment    
+
+The increasing trend in youth as well as the elders for the fitness bands is increasing at an alarming rate and these also serve as a cheap source of private data for the companies or organsations. These kinds of devices are particularly more famous among the fitness enthusiasts and the people who workout regularly or hit the gyms. 
+The users of such devices usually use these devics to monitor their daily activity and to keep a track of their physical activity and ensure that they are hitting their goals and also do it right!!
+
+# Next, we move on the most important part:the !!!!data!!!!   
+
+## as always, the first thung we do is we are loadin the !!!dtaa!!!
+
+```{r configuration, echo=TRUE, results='hide'}
+train_jish.file   <- './data/pml-jish_train_data.csv'
+test_jish.file <- './data/pml-jish_test_data.csv'
+ch_train_jish.url    <- 'https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv'
+ch_test_jish.url  <- 'https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv'
+#Directories
+if (!file.exists("data")){
+  dir.create("data")
+}
+if (!file.exists("data/submission")){
+  dir.create("data/submission")
+}
+
+jish_iscare_insta <- require("caret")
+if(!jish_iscare_insta){
+    install.packages("caret")
+    library("caret")
+    }
+jish_israndfore_insta <- require("randomForest")
+if(!jish_israndfore_insta){
+    install.packages("randomForest")
+    library("randomForest")
+    }
+jish_ispartr_insta <- require("rpart")
+if(!jish_ispartr_insta){
+    install.packages("rpart")
+    library("rpart")
+    }
+jish_ispartr_plot_insta <- require("rpart.plot")
+if(!jish_ispartr_plot_insta){
+    install.packages("rpart.plot")
+    library("rpart.plot")
+    }
+# Set seed for reproducability
+set.seed(9999)
+```
+
+##  The next major step in oour project is the preprocessing of data
+In this part basically we segregate the data into one part and later we slightly modify the data so that it can be used in our project and this part is called as pre-processing of data.Names of some of the variables or attributes will be changed for our benefit so that it will help in our analysis.
+
+```{r dataprocessing, echo=TRUE, results='hide'}
+# As discussed, we will start with downloadin the data
+download.file(ch_train_jish.url, train_jish.file)
+download.file(ch_test_jish.url,test_jish.file )
+# Next major part of the preprocessing is the cleaning, it forms a part of the preprocessing step
+jish_train_data   <-read.csv(train_jish.file, na.strings=c("NA","#DIV/0!", ""))
+jish_test_data <-read.csv(test_jish.file , na.strings=c("NA", "#DIV/0!", ""))
+jish_train_data<-jish_train_data[,colSums(is.na(jish_train_data)) == 0]
+jish_test_data <-jish_test_data[,colSums(is.na(jish_test_data)) == 0]
+# Subset data
+jish_train_data   <-jish_train_data[,-c(1:7)]
+jish_test_data <-jish_test_data[,-c(1:7)]
+```
+
+## The next major step in oour project is checking for cr0$$-valdaton
+
+cr0$-valdaton is usually performed by splitting the data: in our case, jish_train_data data in jish_train_data (seventy-five%) and jish_test_data (twenty-five%).
+
+```{r datasplitting, echo=TRUE, results='hide'}
+jish_sample_subs <- createDataPartition(y=jish_train_data$classe, p=0.75, list=FALSE)
+sub_jish_train_data <- jish_train_data[jish_sample_subs, ] 
+sub_jish_test_data <- jish_train_data[-jish_sample_subs, ]
+```
+Now lets move ahead and form a validation in our data set for tuning:thats what we have done recently!!
+Guess What? currently, we have 3 segments of the data, obviously our next move is to dive into the analysis segment, but not so quick!!!!
+IT WAS VERY EVIDENT THAT THERE WASNT MUCH LEANING WITH RESPECT TO !!classe!!
+
+
+# Examination
+
+ITS TIME FOR SOME ANALYSIS!!!
+After this, we move on and we are ready to leave behind around hundred of the attributes adn hence we will be left with somethign aroynd fifty two attributes with us for the further steps.Now, lets Concentrate on one of the most fascinating features, i.e. It is to our surprise that we notice around ninthy percent of the attributes Are missing. Hence, I feel it would be wise that we leave these or drop these before moving on.
+
+
+```{r exploranalysis, echo=TRUE}
+plot(sub_jish_train_data$classe, col="yellow", main="Ranges of the attribute classe", xlab="levels odf the classe", ylab="Count")
+```
+
+Some of the crucial things about the vertical blocks are:
+
+* !!!*"X"*!!! was and will always remain as supreme basic of
+                the dtaa.
+* !!!*"user_name"*!!! was and will always remain for identifying each individual users which will be helpgul for us what each individual candidate is doing!!
+* *"classe"* was and will always remain the goal which will be used for predctin.
+* Vertical blocks with numbers - *3 to 7* arent't rwequired in this particular thing we are doing!!
+
+* We have discussed already that there going to be four sensors which wr are going to consider and each of them have 38 values and each od the four sensors will have three angles, and by simple Multiplication,We get 3X4 =12.
+The dimensions of the data set are very easy to find out and it is 15699X160!!!
+
+# NOW, we are done with the graphs, hence its time for the model!!
+We have started from many attributes but we have followed many preprocessing steps and we have finally ended with 17 attributes and from now on we are going to use different machine learning models to continue our project!!!!
+Its time we check out what have we done!!!!
+## we next move on to trees: decision ones
+```{r decisiontree, echo=TRUE}
+# As always, the first step is always fitting the data
+jish_fit_tree_mod <- rpart(classe ~ ., data=sub_jish_train_data, method="class")
+# As always, the second step is always predicting the data
+jish_prediction_tree_mod <- predict(jish_fit_tree_mod, sub_jish_test_data, type = "class")
+# Now lets see what we have done until now by plotting
+rpart.plot(jish_fit_tree_mod, main="TYpe1: Cla$$ificaton Tre", extra=102, under=TRUE, faclen=0)
+```
+Confusion Matrixx form a really important part in machine learning as they act as a measure of accuracy of a prediction algorithms and they can also be used as to find out the errors in our algorithm!!!!
+
+```{r decisiontreecm, echo=TRUE}
+confusionMatrix(jish_prediction_tree_mod, sub_jish_test_data$classe)
+```
+
+## we next move on to forests:random ones
+```{r randomforest, echo=TRUE}
+# As always, the first step is always fitting the data
+jish_fit_forest_mod <- randomForest(classe ~ ., data=sub_jish_train_data, method="class")
+# Perform prediction
+jish_prediction_forest_mod <- predict(jish_fit_forest_mod, sub_jish_test_data, type = "class")
+```
+
+Confusion Matrixx form a really important part in machine learning as they act as a measure of accuracy of a prediction algorithms and they can also be used as to find out the errors in our algorithm!!!!
+
+```{r randomforestcm, echo=TRUE}
+confusionMatrix(jish_prediction_forest_mod, sub_jish_test_data$classe)
+```
+
+## Conclusion
+
+### Result
+
+The confusion matrices show, that the Random Forest algorithm performens better than decision trees. The accuracy for the Random Forest model was 0.995 (95% CI: (0.993, 0.997)) compared to 0.739 (95% CI: (0.727, 0.752)) for Decision Tree model. The random Forest model is choosen.
+
+### Expected out-of-sample error
+The expected out-of-sample error is estimated at 0.005, or 0.5%. The expected out-of-sample error is calculated as 1 - accuracy for predictions made against the cross-validation set. Our Test data set comprises 20 cases. With an accuracy above 99% on our cross-validation data, we can expect that very few, or none, of the test samples will be missclassified.
+
+It's clearly visible that this method is much better than the previous method and even the accuracy scores are pretty much a normal as compare to the previous method
+We can see that this method is performing pretty well,although it is acceptable our previous approach which was the random Forest method was performing better than this hence this method has been rejected.
+Now, what we do is we keep with us only rhose colns whose score is atleasr 0.8 with atleast one of the otger attributes, but we might face an issue with this in some oither future step, but lets not worry aboyt that for now!!!
+
+Since it is known that the goal is not a numerical attribute, we cant find out its score straight!!
+ **correlationfunnel::correlate** will come to our rescue!!!but lets not hurry, lets take it slow and one at a time!!!
+
+# Time for declaration!!!!
+After testing the dataset on different models, we have come to a conclusion that the random forest is the best possible approach of all the given approaches that we have tried today. Now, let us validate the accuracy of this random forest algorithm on the test dataset
+```{r submission, echo=TRUE}
+# Lets start with the most important and teh first step, i.e. prediction
+jish_prediction_for_subm <- predict(jish_fit_forest_mod, jish_test_data, type="class")
+jish_prediction_for_subm
+# Lets do the most important and the second step, i.e. noting down everything and documenting
+jish_file_pml_write = function(x){
+  numberrruuu = length(x)
+  for(i in 1:numberrruuu){
+    filename = paste0("./data/submission/problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+jish_file_pml_write(jish_prediction_for_subm)
+```
